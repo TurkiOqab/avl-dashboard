@@ -133,7 +133,7 @@ Assumption (confirmed): every Excel has the **same column layout**, so column na
 
 ### Vehicle rankings
 - Bar chart: top 10 vehicles by total visits (descending).
-- Clicking a bar filters the dashboard to that plate.
+- Primary way to drill into a single plate is the plate multi-select in the filter bar. If Streamlit's chart selection API (or a small event-callback component) makes click-to-filter trivial, we add it; otherwise it's deferred to post-v1.
 
 ### Breakdown
 - Pie/donut: visits share by vehicle type.
