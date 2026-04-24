@@ -84,6 +84,10 @@ def _as_date(v) -> date:
         return v.date()
     if isinstance(v, date):
         return v
+    # Some AVL Excel exports store the date column as an ISO string
+    # rather than an Excel date serial.
+    if isinstance(v, str):
+        return date.fromisoformat(v.strip())
     raise ValueError(f"Cannot interpret {v!r} as a date.")
 
 

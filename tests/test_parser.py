@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 from openpyxl import Workbook, load_workbook
 
-from src.parser import parse_report
+from src.parser import HEADERS, parse_report
 
 
 def test_parse_report_extracts_all_rows(make_excel):
@@ -75,3 +75,24 @@ def test_empty_row_terminates_parsing(make_excel):
     parsed = parse_report(path)
     assert len(parsed.records) == 1
     assert parsed.records[0]["plate_number"] == "ABC-1234"
+
+
+def test_parse_report_accepts_iso_string_dates(tmp_path):
+    """Some AVL exports write the date column as an ISO string rather than
+    an Excel date serial. The parser must accept both."""
+    wb = Workbook()
+    ws = wb.active
+    ws.append([
+        HEADERS["vehicle_type"],
+        HEADERS["plate_number"],
+        HEADERS["record_date"],
+        HEADERS["visits_count"],
+        HEADERS["location_indices"],
+    ])
+    ws.append(["Sedan", "ABC-1234", "2026-04-22", 3, "12, 13, 14"])
+    path = tmp_path / "string-dates.xlsx"
+    wb.save(path)
+
+    parsed = parse_report(path)
+    assert parsed.report_date == date(2026, 4, 22)
+    assert parsed.records[0]["record_date"] == date(2026, 4, 22)
