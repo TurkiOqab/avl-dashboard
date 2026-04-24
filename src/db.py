@@ -38,3 +38,44 @@ class Database:
 
     def close(self) -> None:
         self.conn.close()
+
+    def import_report(
+        self,
+        filename: str,
+        report_date,
+        file_hash: str,
+        records: list[dict],
+    ) -> int:
+        try:
+            cur = self.conn.execute(
+                """
+                INSERT INTO reports (filename, report_date, file_hash, row_count)
+                VALUES (?, ?, ?, ?)
+                """,
+                (filename, report_date.isoformat(), file_hash, len(records)),
+            )
+            report_id = cur.lastrowid
+            self.conn.executemany(
+                """
+                INSERT INTO records (
+                    report_id, vehicle_type, plate_number,
+                    record_date, visits_count, location_indices
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    (
+                        report_id,
+                        r["vehicle_type"],
+                        r["plate_number"],
+                        r["record_date"].isoformat(),
+                        r["visits_count"],
+                        r.get("location_indices"),
+                    )
+                    for r in records
+                ],
+            )
+            self.conn.commit()
+            return report_id
+        except Exception:
+            self.conn.rollback()
+            raise
