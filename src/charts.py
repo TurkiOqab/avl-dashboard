@@ -31,6 +31,7 @@ def top_vehicles_chart(rows: list[dict]) -> go.Figure:
         x=[r["plate_number"] for r in rows],
         y=[r["total_visits"] for r in rows],
         text=[r["vehicle_type"] for r in rows],
+        textposition="auto",  # show vehicle type on each bar
     )])
     fig.update_layout(
         title="Top vehicles by off-route visits",

@@ -36,3 +36,13 @@ def test_type_breakdown_chart_pie_values():
     fig = type_breakdown_chart(data)
     assert list(fig.data[0].labels) == ["Sedan", "Van"]
     assert list(fig.data[0].values) == [5, 6]
+
+
+def test_trend_chart_empty_input_is_valid_figure():
+    """trend_chart must return a valid (empty) figure, not crash, when the
+    query layer hands it zero rows. The Streamlit page will still render
+    an empty chart with axis titles, which is the documented behavior."""
+    fig = trend_chart([])
+    assert len(fig.data) == 0
+    assert fig.layout.xaxis.title.text == "Date"
+    assert fig.layout.yaxis.title.text == "Visits"
