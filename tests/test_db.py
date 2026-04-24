@@ -119,20 +119,36 @@ def test_duplicate_file_hash_raises(db):
 
 
 def test_delete_report_cascades_to_records(db):
-    rid = db.import_report(
+    # Import two reports with records. Deleting only the first must
+    # cascade-delete its records and leave the second report's records intact.
+    # (A single-report test cannot distinguish cascade from "no rows anyway".)
+    rid1 = db.import_report(
         filename="x.xlsx",
         report_date=date(2026, 4, 22),
         file_hash="h-del",
         records=[
-            {
-                "vehicle_type": "Sedan",
-                "plate_number": "A-1",
-                "record_date": date(2026, 4, 22),
-                "visits_count": 1,
-                "location_indices": "1",
-            }
+            {"vehicle_type": "Sedan", "plate_number": "A-1", "record_date": date(2026, 4, 22), "visits_count": 1, "location_indices": "1"},
+            {"vehicle_type": "Van",   "plate_number": "B-2", "record_date": date(2026, 4, 22), "visits_count": 2, "location_indices": "2,3"},
+            {"vehicle_type": "Truck", "plate_number": "C-3", "record_date": date(2026, 4, 22), "visits_count": 3, "location_indices": "4,5,6"},
         ],
     )
-    db.delete_report(rid)
-    assert db.conn.execute("SELECT COUNT(*) FROM reports").fetchone()[0] == 0
-    assert db.conn.execute("SELECT COUNT(*) FROM records").fetchone()[0] == 0
+    db.import_report(
+        filename="y.xlsx",
+        report_date=date(2026, 4, 23),
+        file_hash="h-keep",
+        records=[
+            {"vehicle_type": "Sedan", "plate_number": "Z-9", "record_date": date(2026, 4, 23), "visits_count": 1, "location_indices": "9"},
+        ],
+    )
+
+    # Pre-conditions: both reports present, 4 total records, 3 belong to rid1.
+    assert db.conn.execute("SELECT COUNT(*) FROM records WHERE report_id = ?", (rid1,)).fetchone()[0] == 3
+    assert db.conn.execute("SELECT COUNT(*) FROM records").fetchone()[0] == 4
+
+    db.delete_report(rid1)
+
+    # Post-conditions: rid1 gone, its 3 records cascaded away, but the other
+    # report and its 1 record still exist.
+    assert db.conn.execute("SELECT COUNT(*) FROM reports").fetchone()[0] == 1
+    assert db.conn.execute("SELECT COUNT(*) FROM records WHERE report_id = ?", (rid1,)).fetchone()[0] == 0
+    assert db.conn.execute("SELECT COUNT(*) FROM records").fetchone()[0] == 1
