@@ -44,6 +44,10 @@ with c3:
 with c4:
     plates = st.multiselect("Plate", all_plates, default=[])
 
+if start > end:
+    st.error("'From' must be on or before 'To'.")
+    st.stop()
+
 filters = {
     "start_date": start,
     "end_date": end,
@@ -52,6 +56,10 @@ filters = {
 }
 
 kpis = get_kpis(db.conn, filters)
+if kpis["total_visits"] == 0:
+    st.warning("No records match the current filters. Widen the date range or clear the type/plate filters.")
+    st.stop()
+
 k1, k2, k3, k4 = st.columns(4)
 k1.metric("Total visits", kpis["total_visits"])
 k2.metric("Active vehicles", kpis["active_vehicles"])
