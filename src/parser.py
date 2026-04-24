@@ -1,3 +1,4 @@
+import unicodedata
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -66,7 +67,12 @@ def _build_column_index(header_row) -> dict:
 
 
 def _normalize(s) -> str:
-    return "" if s is None else str(s).strip().lower()
+    # NFKC collapses compatibility characters (e.g. Arabic presentation forms,
+    # non-breaking / zero-width spaces) to a canonical form so headers pasted
+    # from Excel match the HEADERS constants. casefold handles any Latin case.
+    if s is None:
+        return ""
+    return unicodedata.normalize("NFKC", str(s)).strip().casefold()
 
 
 def _str(v) -> str:
