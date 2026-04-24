@@ -116,3 +116,23 @@ def test_duplicate_file_hash_raises(db):
     base["filename"] = "b.xlsx"
     with pytest.raises(sqlite3.IntegrityError):
         db.import_report(**base)
+
+
+def test_delete_report_cascades_to_records(db):
+    rid = db.import_report(
+        filename="x.xlsx",
+        report_date=date(2026, 4, 22),
+        file_hash="h-del",
+        records=[
+            {
+                "vehicle_type": "Sedan",
+                "plate_number": "A-1",
+                "record_date": date(2026, 4, 22),
+                "visits_count": 1,
+                "location_indices": "1",
+            }
+        ],
+    )
+    db.delete_report(rid)
+    assert db.conn.execute("SELECT COUNT(*) FROM reports").fetchone()[0] == 0
+    assert db.conn.execute("SELECT COUNT(*) FROM records").fetchone()[0] == 0

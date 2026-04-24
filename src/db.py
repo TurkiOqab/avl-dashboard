@@ -84,3 +84,7 @@ class Database:
         return self.conn.execute(
             "SELECT * FROM reports WHERE file_hash = ?", (file_hash,)
         ).fetchone()
+
+    def delete_report(self, report_id: int) -> None:
+        self.conn.execute("DELETE FROM reports WHERE id = ?", (report_id,))
+        self.conn.commit()
