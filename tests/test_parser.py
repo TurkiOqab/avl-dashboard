@@ -1,7 +1,7 @@
 from datetime import date
 
 import pytest
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 
 from src.parser import parse_report
 
@@ -65,8 +65,7 @@ def test_empty_row_terminates_parsing(make_excel):
     ]
     path = make_excel(rows, filename="with-photos.xlsx")
 
-    import openpyxl
-    wb = openpyxl.load_workbook(path)
+    wb = load_workbook(path)
     ws = wb.active
     ws.append([None, None, None, None, None])
     ws.append(["PHOTO SECTION", None, None, None, None])

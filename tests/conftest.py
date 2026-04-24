@@ -1,6 +1,8 @@
 import pytest
+from openpyxl import Workbook
 
 from src.db import Database
+from src.parser import HEADERS
 
 
 @pytest.fixture
@@ -10,11 +12,6 @@ def db():
     d.init_schema()
     yield d
     d.close()
-
-
-from openpyxl import Workbook
-
-from src.parser import HEADERS
 
 
 def _write_excel(path, rows):
