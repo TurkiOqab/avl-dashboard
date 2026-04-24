@@ -35,7 +35,6 @@ class Database:
 
     def init_schema(self) -> None:
         self.conn.executescript(SCHEMA)
-        self.conn.commit()
 
     def close(self) -> None:
         self.conn.close()
