@@ -90,12 +90,21 @@ def get_top_vehicles(conn: Connection, filters: dict, limit: int = 10) -> list[d
         FROM records
         WHERE {where}
         GROUP BY plate_number, vehicle_type
+        -- secondary sort by plate_number keeps ties deterministic
         ORDER BY total_visits DESC, plate_number
         LIMIT ?
         """,
         params + [limit],
     ).fetchall()
-    return [dict(r) for r in rows]
+    return [
+        {
+            "plate_number": r["plate_number"],
+            "vehicle_type": r["vehicle_type"],
+            "total_visits": r["total_visits"],
+            "last_seen": date.fromisoformat(r["last_seen"]),
+        }
+        for r in rows
+    ]
 
 
 def get_type_breakdown(conn: Connection, filters: dict) -> list[dict]:

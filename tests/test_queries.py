@@ -53,8 +53,10 @@ def test_top_vehicles_sorted_desc(seeded_db):
     top = get_top_vehicles(seeded_db.conn, _full_filters(), limit=10)
     assert top[0]["plate_number"] == "B-2"
     assert top[0]["total_visits"] == 6       # 5+1
+    assert top[0]["last_seen"] == date(2026, 4, 22)
     assert top[1]["plate_number"] == "A-1"
     assert top[1]["total_visits"] == 5       # 2+3
+    assert top[1]["last_seen"] == date(2026, 4, 22)
 
 
 def test_type_breakdown(seeded_db):
