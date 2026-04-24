@@ -80,7 +80,7 @@ class Database:
             self.conn.rollback()
             raise
 
-    def find_report_by_hash(self, file_hash: str):
+    def find_report_by_hash(self, file_hash: str) -> sqlite3.Row | None:
         return self.conn.execute(
             "SELECT * FROM reports WHERE file_hash = ?", (file_hash,)
         ).fetchone()

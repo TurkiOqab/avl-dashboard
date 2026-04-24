@@ -1,3 +1,9 @@
+import sqlite3
+from datetime import date
+
+import pytest
+
+
 def test_init_schema_creates_reports_and_records_tables(db):
     cur = db.conn.execute(
         "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
@@ -5,10 +11,6 @@ def test_init_schema_creates_reports_and_records_tables(db):
     tables = [row[0] for row in cur.fetchall()]
     assert "reports" in tables
     assert "records" in tables
-
-
-from datetime import date
-import pytest
 
 
 def test_import_report_inserts_report_and_records(db):
@@ -69,9 +71,6 @@ def test_import_report_rolls_back_on_bad_record(db):
         )
     assert db.conn.execute("SELECT COUNT(*) FROM reports").fetchone()[0] == 0
     assert db.conn.execute("SELECT COUNT(*) FROM records").fetchone()[0] == 0
-
-
-import sqlite3
 
 
 def test_find_report_by_hash_returns_none_when_missing(db):
