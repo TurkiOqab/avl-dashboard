@@ -69,3 +69,51 @@ def test_import_report_rolls_back_on_bad_record(db):
         )
     assert db.conn.execute("SELECT COUNT(*) FROM reports").fetchone()[0] == 0
     assert db.conn.execute("SELECT COUNT(*) FROM records").fetchone()[0] == 0
+
+
+import sqlite3
+
+
+def test_find_report_by_hash_returns_none_when_missing(db):
+    assert db.find_report_by_hash("nope") is None
+
+
+def test_find_report_by_hash_returns_row_when_present(db):
+    db.import_report(
+        filename="x.xlsx",
+        report_date=date(2026, 4, 22),
+        file_hash="abc123",
+        records=[
+            {
+                "vehicle_type": "Sedan",
+                "plate_number": "A-1",
+                "record_date": date(2026, 4, 22),
+                "visits_count": 1,
+                "location_indices": "1",
+            }
+        ],
+    )
+    row = db.find_report_by_hash("abc123")
+    assert row is not None
+    assert row["filename"] == "x.xlsx"
+
+
+def test_duplicate_file_hash_raises(db):
+    base = dict(
+        filename="a.xlsx",
+        report_date=date(2026, 4, 22),
+        file_hash="dup",
+        records=[
+            {
+                "vehicle_type": "Sedan",
+                "plate_number": "A-1",
+                "record_date": date(2026, 4, 22),
+                "visits_count": 1,
+                "location_indices": "1",
+            }
+        ],
+    )
+    db.import_report(**base)
+    base["filename"] = "b.xlsx"
+    with pytest.raises(sqlite3.IntegrityError):
+        db.import_report(**base)

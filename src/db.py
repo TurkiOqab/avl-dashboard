@@ -79,3 +79,8 @@ class Database:
         except Exception:
             self.conn.rollback()
             raise
+
+    def find_report_by_hash(self, file_hash: str):
+        return self.conn.execute(
+            "SELECT * FROM reports WHERE file_hash = ?", (file_hash,)
+        ).fetchone()
